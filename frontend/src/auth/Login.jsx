@@ -67,7 +67,7 @@ const Login = () => {
                 name="email"
                 value={credentials.email}
                 onChange={handleChange}
-                className="w-full pl-9 pr-3 py-2 sm:py-2.5 text-sm border border-gray-300 rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white"
+                className="w-full pl-9 pr-3 py-3 sm:py-3 text-sm border border-gray-300 rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white"
                 placeholder="your@email.com"
                 required
               />
@@ -86,7 +86,7 @@ const Login = () => {
                 name="password"
                 value={credentials.password}
                 onChange={handleChange}
-                className="w-full pl-9 pr-10 py-2 sm:py-2.5 text-sm border border-gray-300 rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white"
+                className="w-full pl-9 pr-10 py-3 sm:py-3 text-sm border border-gray-300 rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white"
                 placeholder="••••••••"
                 required
               />
@@ -117,7 +117,7 @@ const Login = () => {
                   name="businessId"
                   value={credentials.businessId}
                   onChange={handleChange}
-                  className="w-full pl-7 pr-2 py-2 text-sm border border-gray-300 rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white"
+                  className="w-full pl-7 pr-2 py-3 text-sm border border-gray-300 rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white"
                   placeholder="ID"
                   required
                 />
@@ -135,7 +135,7 @@ const Login = () => {
                   name="branchId"
                   value={credentials.branchId}
                   onChange={handleChange}
-                  className="w-full pl-7 pr-2 py-2 text-sm border border-gray-300 rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white"
+                  className="w-full pl-7 pr-2 py-3 text-sm border border-gray-300 rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white"
                   placeholder="ID"
                   required
                 />
@@ -147,7 +147,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 sm:py-2.5 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full py-3 sm:py-3 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {loading ? (
               <>

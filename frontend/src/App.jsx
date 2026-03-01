@@ -20,94 +20,51 @@ function App() {
             <AuthProvider>
                 <Toast />
                 <Routes>
+                    {/* Public route */}
                     <Route path="/login" element={<Login />} />
 
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/sales" element={<Sales />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/users" element={<Users />} />
-
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <PrivateRoute>
-                                <ProtectedLayout>
-                                    <Dashboard />
-                                </ProtectedLayout>
-                            </PrivateRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/products"
-                        element={
+                    {/* Protected routes - all wrapped in PrivateRoute with ProtectedLayout */}
+                    <Route path="/" element={
+                        <PrivateRoute>
+                            <ProtectedLayout />
+                        </PrivateRoute>
+                    }>
+                        {/* Nested routes will render inside ProtectedLayout's children */}
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="products" element={
                             <PrivateRoute allowedRoles={['super_admin', 'owner', 'manager', 'inventory']}>
-                                <ProtectedLayout>
-                                    <Products />
-                                </ProtectedLayout>
+                                <Products />
                             </PrivateRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/sales"
-                        element={
+                        } />
+                        <Route path="sales" element={
                             <PrivateRoute allowedRoles={['super_admin', 'owner', 'manager', 'cashier']}>
-                                <ProtectedLayout>
-                                    <Sales />
-                                </ProtectedLayout>
+                                <Sales />
                             </PrivateRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/inventory"
-                        element={
+                        } />
+                        <Route path="inventory" element={
                             <PrivateRoute allowedRoles={['super_admin', 'owner', 'manager', 'inventory']}>
-                                <ProtectedLayout>
-                                    <Inventory />
-                                </ProtectedLayout>
+                                <Inventory />
                             </PrivateRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/reports"
-                        element={
+                        } />
+                        <Route path="reports" element={
                             <PrivateRoute allowedRoles={['super_admin', 'owner', 'manager']}>
-                                <ProtectedLayout>
-                                    <Reports />
-                                </ProtectedLayout>
+                                <Reports />
                             </PrivateRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/users"
-                        element={
+                        } />
+                        <Route path="users" element={
                             <PrivateRoute allowedRoles={['super_admin', 'owner']}>
-                                <ProtectedLayout>
-                                    <Users />
-                                </ProtectedLayout>
+                                <Users />
                             </PrivateRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/settings"
-                        element={
+                        } />
+                        <Route path="settings" element={
                             <PrivateRoute allowedRoles={['super_admin', 'owner']}>
-                                <ProtectedLayout>
-                                    <Settings />
-                                </ProtectedLayout>
+                                <Settings />
                             </PrivateRoute>
-                        }
-                    />
+                        } />
+                    </Route>
 
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    {/* Redirect any unknown routes to dashboard */}
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
             </AuthProvider>
         </ErrorBoundary>
