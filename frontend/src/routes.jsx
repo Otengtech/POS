@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 
 // Layout - Critical path, load immediately
-import Layout from './components/Layout/Layout';
+import Layout from './components/layout/Layout';
 
 // Critical components - load immediately
 import Loader from './common/Loader';
