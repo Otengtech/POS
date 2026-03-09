@@ -14,7 +14,6 @@ const Layout = () => {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Overlay */}
         <div
           className={`fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity ${
             sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
