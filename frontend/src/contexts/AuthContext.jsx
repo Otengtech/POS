@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { login as apiLogin, logout as apiLogout, refreshToken } from '../services/authService';
-import { getStoredUser, setStoredUser, removeStoredUser, getStoredToken, setStoredToken, removeStoredToken } from '../utils/helpers';
+import { authApi } from '../api/auth';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -15,87 +15,103 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
-    // Check for stored user data on mount
-    const storedUser = getStoredUser();
-    const storedToken = getStoredToken();
-    
-    if (storedUser && storedToken) {
-      setUser(storedUser);
-      setToken(storedToken);
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    // Set up token refresh interval
     if (token) {
-      const interval = setInterval(async () => {
-        try {
-          const newToken = await refreshToken();
-          setToken(newToken);
-          setStoredToken(newToken);
-        } catch (error) {
-          console.error('Token refresh failed:', error);
-          logout();
-        }
-      }, 14 * 60 * 1000); // Refresh every 14 minutes
-
-      return () => clearInterval(interval);
+      loadUser();
+    } else {
+      setLoading(false);
     }
   }, [token]);
 
-  const login = async (credentials) => {
+  const loadUser = async () => {
     try {
-      setLoading(true);
-      const response = await apiLogin(credentials);
-      
-      if (response.success) {
-        const { user, token } = response.data;
-        setUser(user);
-        setToken(token);
-        setStoredUser(user);
-        setStoredToken(token);
-        return { success: true };
+      const response = await authApi.getProfile();
+      // Based on your backend structure, the response might be:
+      // { success: true, data: { user: {...} } }
+      if (response.success && response.data?.user) {
+        setUser(response.data.user);
+      } else if (response.data?.user) {
+        setUser(response.data.user);
+      } else if (response.user) {
+        setUser(response.user);
       }
-      return { success: false, error: response.error };
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error('Failed to load user:', error);
+      logout();
     } finally {
       setLoading(false);
     }
   };
 
+  const login = async (email, password) => {
+    try {
+      const response = await authApi.login(email, password);
+      
+      // Handle different possible response structures
+      let token = null;
+      let userData = null;
+
+      if (response.token) {
+        token = response.token;
+        userData = response.data?.user || response.user;
+      } else if (response.data?.token) {
+        token = response.data.token;
+        userData = response.data.user;
+      } else if (response.success && response.data) {
+        token = response.data.token;
+        userData = response.data.user;
+      }
+
+      if (token && userData) {
+        localStorage.setItem('token', token);
+        setToken(token);
+        setUser(userData);
+        toast.success('Login successful!');
+        return { success: true, user: userData };
+      } else {
+        throw new Error('Invalid response structure');
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || 'Login failed';
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
   const logout = async () => {
     try {
-      await apiLogout();
+      await authApi.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      setUser(null);
+      localStorage.removeItem('token');
       setToken(null);
-      removeStoredUser();
-      removeStoredToken();
+      setUser(null);
+      toast.success('Logged out successfully');
+      window.location.href = '/login';
     }
+  };
+
+  const hasRole = (roles) => {
+    if (!user) return false;
+    if (Array.isArray(roles)) {
+      return roles.includes(user.role);
+    }
+    return user.role === roles;
   };
 
   const value = {
     user,
-    token,
     loading,
     login,
     logout,
-    isAuthenticated: !!user && !!token,
-    userRole: user?.role,
-    businessId: user?.businessId,
-    branchId: user?.branchId,
+    hasRole,
+    isAuthenticated: !!user,
+    isSuperAdmin: user?.role === 'super_admin',
+    isAdmin: user?.role === 'admin',
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

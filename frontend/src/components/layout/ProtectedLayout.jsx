@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import Navbar from './Navbar';
+import Navbar from './Header';
 import { FaBars, FaTimes } from 'react-icons/fa';
 
 const ProtectedLayout = () => {
@@ -71,7 +71,7 @@ const ProtectedLayout = () => {
           ${isMobile ? 'pt-16 px-4' : 'pt-20 px-6'}
           pb-6 animate-fade-in
         `}>
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto mt-8 md:mt-0">
             <Outlet />
           </div>
         </main>

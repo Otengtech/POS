@@ -2,94 +2,81 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  FiHome,
-  FiPackage,
-  FiShoppingCart,
-  FiClipboard,
-  FiPieChart,
-  FiUsers,
-  FiSettings,
-  FiLogOut
-} from 'react-icons/fi';
-import { BiStore } from 'react-icons/bi';
+  HomeIcon,
+  UserGroupIcon,
+  BuildingOfficeIcon,
+  MapPinIcon,
+  ShoppingBagIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
+  CogIcon,
+  ArchiveBoxIcon,
+  CurrencyDollarIcon,
+  ArrowRightOnRectangleIcon,
+} from '@heroicons/react/24/outline';
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, hasRole } = useAuth();
 
-  const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: FiHome, roles: ['*'] },
-    { path: '/products', label: 'Products', icon: FiPackage, roles: ['*','super_admin', 'owner', 'manager', 'inventory'] },
-    { path: '/sales', label: 'Sales', icon: FiShoppingCart, roles: ['*','super_admin', 'owner', 'manager', 'cashier'] },
-    { path: '/inventory', label: 'Inventory', icon: FiClipboard, roles: ['*','super_admin', 'owner', 'manager', 'inventory'] },
-    { path: '/reports', label: 'Reports', icon: FiPieChart, roles: ['*','super_admin', 'owner', 'manager'] },
-    { path: '/users', label: 'Users', icon: FiUsers, roles: ['*','super_admin', 'owner'] },
-    { path: '/settings', label: 'Settings', icon: FiSettings, roles: ['*','super_admin', 'owner'] },
-  ];
+  const navigation = [
+  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, roles: ['super_admin', 'admin'] },
+  { name: 'Admins', href: '/admins', icon: UserGroupIcon, roles: ['super_admin'] },
+  { name: 'Businesses', href: '/businesses', icon: BuildingOfficeIcon, roles: ['super_admin', 'admin'] },
+  { name: 'Branches', href: '/branches', icon: MapPinIcon, roles: ['super_admin', 'admin'] },
+  { name: 'Products', href: '/products', icon: ShoppingBagIcon, roles: ['super_admin', 'admin'] },
+  { name: 'Sales', href: '/sales', icon: CurrencyDollarIcon, roles: ['super_admin', 'admin'] },
+  { name: 'Inventory', href: '/inventory', icon: ArchiveBoxIcon, roles: ['super_admin', 'admin'] },
+  { name: 'Reports', href: '/reports', icon: ChartBarIcon, roles: ['super_admin', 'admin'] },
+  { name: 'Settings', href: '/settings', icon: CogIcon, roles: ['super_admin', 'admin'] },
+];
 
-  const filteredMenuItems = menuItems.filter(item => 
-    item.roles.includes('*') || (user && item.roles.includes(user.role))
+  const filteredNavigation = navigation.filter(item => 
+    item.roles.some(role => hasRole(role))
   );
 
   return (
-    <div className="h-full w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-xl flex flex-col overflow-y-auto">
-      {/* Logo Area */}
-      <div className="p-5 border-b border-gray-700/50">
-        <div className="flex items-center space-x-3">
-          <div className="bg-yellow-400 p-2 rounded-lg">
-            <BiStore className="w-6 h-6 text-black" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">POS System</h1>
+    <div className="hidden h-screen md:flex md:w-64 md:flex-col">
+      <div className="flex flex-col flex-grow pt-5 bg-white overflow-y-auto border-r border-gray-200">
+        <div className="flex items-center flex-shrink-0 px-4">
+          <h1 className="text-xl font-bold text-gray-800">POS System</h1>
+        </div>
+        <div className="mt-5 flex-1 flex flex-col">
+          <nav className="flex-1 px-2 pb-4 space-y-1">
+            {filteredNavigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={({ isActive }) =>
+                  `group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                    isActive
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`
+                }
+              >
+                <item.icon
+                  className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500"
+                  aria-hidden="true"
+                />
+                {item.name}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+        <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
+          <div className="flex items-center">
+            <div>
+              <p className="text-sm font-medium text-gray-700">{user?.firstName} {user?.lastName}</p>
+              <p className="text-xs text-gray-500">{user?.role}</p>
+            </div>
+            <button
+              onClick={logout}
+              className="ml-auto flex items-center text-gray-400 hover:text-gray-500"
+            >
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3">
-        <ul className="space-y-1">
-          {filteredMenuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
-                      isActive 
-                        ? 'bg-yellow-400 text-black shadow-md shadow-yellow-400/30' 
-                        : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                    }`
-                  }
-                >
-                  <Icon className={`w-5 h-5 ${({ isActive }) => isActive ? 'text-black' : 'text-gray-400 group-hover:text-white'}`} />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
-      {/* User Info & Logout */}
-      <div className="p-4 border-t border-gray-700/50">
-        <div className="flex items-center space-x-3 mb-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 flex items-center justify-center">
-            <span className="text-sm font-medium text-black">
-              {user?.name?.charAt(0) || 'U'}
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user?.name || 'User'}</p>
-            <p className="text-xs text-gray-400 truncate capitalize">{user?.role?.replace('_', ' ') || 'Loading...'}</p>
-          </div>
-        </div>
-        <button
-          onClick={logout}
-          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-red-600/20 hover:text-red-400 transition-all duration-200 group"
-        >
-          <FiLogOut className="w-5 h-5 text-gray-400 group-hover:text-red-400" />
-          <span className="text-sm font-medium">Logout</span>
-        </button>
       </div>
     </div>
   );

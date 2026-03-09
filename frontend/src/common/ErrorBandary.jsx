@@ -1,5 +1,4 @@
 import React from 'react';
-import { FaExclamationTriangle } from 'react-icons/fa';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -18,21 +17,20 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-          <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
-            <div className="text-yellow-400 text-6xl mb-4 flex justify-center">
-              <FaExclamationTriangle />
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h2>
+                <p className="text-gray-600 mb-4">{this.state.error?.message || 'An unexpected error occurred'}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Refresh Page
+                </button>
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h1>
-            <p className="text-gray-600 mb-6">
-              We're sorry for the inconvenience. Please try refreshing the page.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="btn-primary"
-            >
-              Refresh Page
-            </button>
           </div>
         </div>
       );
