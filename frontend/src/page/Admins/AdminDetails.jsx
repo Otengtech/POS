@@ -1,302 +1,354 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { adminApi } from '../../api/admins';
-import { useToast } from '../../contexts/ToastContext';
-import LoadingSpinner from '../../common/Loader';
-import ConfirmDialog from '../../common/ConfirmDialog';
-import StatusBadge from '../../common/StatusBadge';
-import Card from '../../common/Card';
-import PageHeader from '../../common/PageHeader';
-import { 
-  UserIcon, 
-  EnvelopeIcon, 
-  PhoneIcon, 
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { adminApi } from "../../api/admins";
+import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../contexts/ToastContext";
+import Loader from "../../common/Loader";
+import ConfirmDialog from "../../common/ConfirmDialog";
+
+import {
+  UserIcon,
+  EnvelopeIcon,
+  PhoneIcon,
   CalendarIcon,
   ShieldCheckIcon,
   PencilIcon,
   TrashIcon,
-  ArrowPathIcon,
   CheckBadgeIcon,
-  XCircleIcon
-} from '@heroicons/react/24/outline';
+  XCircleIcon,
+  ArrowLeftIcon,
+  ClockIcon,
+  FingerPrintIcon,
+  GlobeAltIcon
+} from "@heroicons/react/24/outline";
 
 const AdminDetails = () => {
-  const [admin, setAdmin] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false });
-  const [deactivateDialog, setDeactivateDialog] = useState({ isOpen: false });
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAuth();
+
+  const [admin, setAdmin] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deactivateDialog, setDeactivateDialog] = useState(false);
 
   useEffect(() => {
-    fetchAdminDetails();
+    fetchAdmin();
   }, [id]);
 
-  const fetchAdminDetails = async () => {
+  const fetchAdmin = async () => {
     try {
       setLoading(true);
-      const response = await adminApi.getAdmin(id);
-      setAdmin(response.data.admin);
-    } catch (error) {
-      toast.error('Failed to fetch admin details');
-      navigate('/admins');
+      const res = await adminApi.getAdmin(id);
+      setAdmin(res.data.admin || res.data);
+    } catch (err) {
+      console.error(err);
+      setError(err?.response?.data?.message || "Failed to fetch admin");
+      toast.error("Failed to fetch admin details");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async () => {
+  const deleteAdmin = async () => {
     try {
       await adminApi.deleteAdmin(id);
-      toast.success('Admin deleted successfully');
-      navigate('/admins');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete admin');
+      toast.success("Admin deleted");
+      navigate("/admins");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Delete failed");
     } finally {
-      setDeleteDialog({ isOpen: false });
+      setDeleteDialog(false);
     }
   };
 
-  const handleDeactivate = async () => {
+  const deactivateAdmin = async () => {
     try {
       await adminApi.deactivateAdmin(id);
-      toast.success('Admin deactivated successfully');
-      fetchAdminDetails();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to deactivate admin');
+      toast.success("Admin deactivated");
+      fetchAdmin();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Deactivate failed");
     } finally {
-      setDeactivateDialog({ isOpen: false });
+      setDeactivateDialog(false);
     }
   };
 
-  const handleActivate = async () => {
+  const activateAdmin = async () => {
     try {
-      // Note: You might need to add an activate endpoint
-      toast.success('Admin activated successfully');
-      fetchAdminDetails();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to activate admin');
+      await adminApi.activateAdmin(id);
+      toast.success("Admin activated");
+      fetchAdmin();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Activation failed");
+    }
+  };
+
+  const formatDate = (date) =>
+    date
+      ? new Date(date).toLocaleString("en-GH", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      : "N/A";
+
+  const initials = `${admin?.firstName?.[0] || ""}${admin?.lastName?.[0] || ""}`;
+
+  const roleBadge = (role) => {
+    switch (role) {
+      case "super_admin":
+        return "bg-purple-100 text-purple-800";
+      case "admin":
+        return "bg-blue-100 text-blue-800";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   if (loading) {
-    return <LoadingSpinner fullScreen />;
-  }
-
-  if (!admin) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">Admin not found</p>
+      <div className="p-8">
+        <Loader size="large" text="Loading admin..." />
       </div>
     );
   }
 
-  const actions = (
-    <div className="flex space-x-3">
-      <Link
-        to={`/admins/${id}/edit`}
-        className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        <PencilIcon className="h-4 w-4 mr-2" />
-        Edit
-      </Link>
-      
-      {admin.isActive ? (
-        <button
-          onClick={() => setDeactivateDialog({ isOpen: true })}
-          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-        >
-          <XCircleIcon className="h-4 w-4 mr-2" />
-          Deactivate
-        </button>
-      ) : (
-        <button
-                  onClick={handleActivate}
-          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-        >
-          <CheckBadgeIcon className="h-4 w-4 mr-2" />
-          Activate
-        </button>
-      )}
-      
-      <button
-        onClick={() => setDeleteDialog({ isOpen: true })}
-        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-      >
-        <TrashIcon className="h-4 w-4 mr-2" />
-        Delete
-      </button>
-    </div>
-  );
+  if (error || !admin) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 p-6 rounded-xl border border-red-200">
+          <h2 className="text-red-600 font-semibold mb-3">Admin Not Found</h2>
+          <p className="text-sm text-gray-600 mb-4">{error}</p>
+
+          <button
+            onClick={() => navigate("/admins")}
+            className="flex items-center px-4 py-2 bg-gray-800 text-white rounded-lg"
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <PageHeader 
-        title="Admin Details"
-        subtitle={`Viewing information for ${admin.firstName} ${admin.lastName}`}
-        backLink="/admins"
-        actions={actions}
-      />
+    <div className="p-8 space-y-6">
 
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Profile Card */}
-        <div className="lg:col-span-1">
-          <Card>
-            <div className="text-center">
-              {admin.profileImage ? (
-                <img
-                  src={admin.profileImage}
-                  alt={`${admin.firstName} ${admin.lastName}`}
-                  className="h-32 w-32 rounded-full mx-auto object-cover border-4 border-gray-200"
-                />
-              ) : (
-                <div className="h-32 w-32 rounded-full mx-auto bg-indigo-100 flex items-center justify-center border-4 border-gray-200">
-                  <UserIcon className="h-16 w-16 text-indigo-600" />
-                </div>
-              )}
-              
-              <h2 className="mt-4 text-xl font-bold text-gray-900">
-                {admin.firstName} {admin.lastName}
-              </h2>
-              
-              <div className="mt-2">
-                <StatusBadge status={admin.isActive ? 'active' : 'inactive'} />
-              </div>
-              
-              <div className="mt-4 text-sm text-gray-500">
-                <div className="flex items-center justify-center">
-                  <ShieldCheckIcon className="h-4 w-4 mr-1 text-gray-400" />
-                  <span className="capitalize">{admin.role?.replace('_', ' ')}</span>
-                </div>
-              </div>
-            </div>
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
 
-            <div className="mt-6 border-t border-gray-200 pt-6">
-              <dl className="space-y-4">
-                <div className="flex items-center">
-                  <dt className="text-sm font-medium text-gray-500 w-24">Status:</dt>
-                  <dd>
-                    <StatusBadge status={admin.isActive ? 'active' : 'inactive'} type="dot" />
-                  </dd>
-                </div>
-                
-                <div className="flex items-center">
-                  <dt className="text-sm font-medium text-gray-500 w-24">Role:</dt>
-                  <dd className="text-sm text-gray-900 capitalize">
-                    {admin.role?.replace('_', ' ')}
-                  </dd>
-                </div>
-                
-                <div className="flex items-center">
-                  <dt className="text-sm font-medium text-gray-500 w-24">Last Login:</dt>
-                  <dd className="text-sm text-gray-900">
-                    {admin.lastLogin ? new Date(admin.lastLogin).toLocaleString('en-GH') : 'Never'}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </Card>
+        <div>
+          <button
+            onClick={() => navigate("/admins")}
+            className="flex items-center text-sm text-gray-500 mb-3"
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-1" />
+            Back to admins
+          </button>
+
+          <h1 className="text-3xl font-semibold flex items-center">
+            <ShieldCheckIcon className="h-7 w-7 mr-3 text-green-600" />
+            Admin Details
+          </h1>
         </div>
 
-        {/* Details Card */}
-        <div className="lg:col-span-2">
-          <Card title="Personal Information">
-            <dl className="divide-y divide-gray-200">
-              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium text-gray-500 flex items-center">
-                  <UserIcon className="h-4 w-4 mr-2 text-gray-400" />
-                  Full name
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {admin.firstName} {admin.lastName}
-                </dd>
-              </div>
-              
-              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium text-gray-500 flex items-center">
-                  <EnvelopeIcon className="h-4 w-4 mr-2 text-gray-400" />
-                  Email address
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  <a href={`mailto:${admin.email}`} className="text-indigo-600 hover:text-indigo-900">
-                    {admin.email}
-                  </a>
-                </dd>
-              </div>
-              
-              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium text-gray-500 flex items-center">
-                  <PhoneIcon className="h-4 w-4 mr-2 text-gray-400" />
-                  Phone number
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {admin.phone || 'Not provided'}
-                </dd>
-              </div>
-              
-              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium text-gray-500 flex items-center">
-                  <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
-                  Created at
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {new Date(admin.createdAt).toLocaleString('en-GH', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </dd>
-              </div>
-              
-              <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-medium text-gray-500 flex items-center">
-                  <ArrowPathIcon className="h-4 w-4 mr-2 text-gray-400" />
-                  Last updated
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {new Date(admin.updatedAt).toLocaleString('en-GH', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </dd>
-              </div>
-            </dl>
-          </Card>
+        <div className="flex gap-3">
 
-          {/* Activity Card */}
-          <Card title="Recent Activity" className="mt-6">
-            <div className="text-center py-8">
-              <p className="text-sm text-gray-500">No recent activity to display</p>
-            </div>
-          </Card>
+          {/* <Link
+            to={`/admins/${id}/edit`}
+            className="flex items-center px-4 py-2 border rounded-lg"
+          >
+            <PencilIcon className="h-4 w-4 mr-2" />
+            Edit
+          </Link> */}
+
+          {admin.isActive ? (
+            <button
+              onClick={() => setDeactivateDialog(true)}
+              className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg"
+              disabled={user?.id === admin._id}
+            >
+              <XCircleIcon className="h-4 w-4 mr-2" />
+              Deactivate
+            </button>
+          ) : (
+            <button
+              onClick={activateAdmin}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-full"
+            >
+              <CheckBadgeIcon className="h-4 w-4 mr-2" />
+              Activate
+            </button>
+          )}
+
+          {user?.role === "super_admin" && user?.id !== admin._id && (
+            <button
+              onClick={() => setDeleteDialog(true)}
+              className="flex items-center px-4 py-2 bg-red-600 text-white rounded-full"
+            >
+              <TrashIcon className="h-4 w-4 mr-2" />
+              Delete
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* GRID */}
+      <div className="grid lg:grid-cols-3 gap-6">
+
+        {/* PROFILE */}
+        <div className="bg-white rounded-xl shadow border p-6 text-center">
+
+          {admin.profileImage ? (
+            <img
+              src={admin.profileImage}
+              alt="avatar"
+              className="h-28 w-28 rounded-full object-cover mx-auto"
+            />
+          ) : (
+            <div className="h-28 w-28 text-white rounded-full bg-black flex items-center justify-center mx-auto text-3xl font-bold">
+              {initials}
+            </div>
+          )}
+
+          <h2 className="mt-4 text-xl font-semibold">
+            {admin.firstName} {admin.lastName}
+          </h2>
+
+          <span
+            className={`inline-block mt-2 px-3 py-1 rounded-full text-xs ${roleBadge(
+              admin.role
+            )}`}
+          >
+            {admin.role}
+          </span>
+
+          <div className="mt-6 text-left space-y-3 text-sm">
+
+            <p className="flex items-center">
+              <FingerPrintIcon className="h-4 w-4 mr-2" />
+              {admin._id}
+            </p>
+
+            <p className="flex items-center">
+              <CalendarIcon className="h-4 w-4 mr-2" />
+              Created: {formatDate(admin.createdAt)}
+            </p>
+
+            <p className="flex items-center">
+              <ClockIcon className="h-4 w-4 mr-2" />
+              Last Login: {formatDate(admin.lastLoginAt)}
+            </p>
+
+            {admin.lastLoginIp && (
+              <p className="flex items-center">
+                <GlobeAltIcon className="h-4 w-4 mr-2" />
+                {admin.lastLoginIp}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* DETAILS */}
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* PERSONAL */}
+          <div className="bg-white rounded-xl shadow border p-6">
+
+            <h3 className="font-semibold mb-4 flex items-center">
+              <UserIcon className="h-5 w-5 mr-2" />
+              Personal Information
+            </h3>
+
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+
+              <div>
+                <p className="text-gray-500">First Name</p>
+                <p>{admin.firstName}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Last Name</p>
+                <p>{admin.lastName}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500 flex items-center">
+                  <EnvelopeIcon className="h-4 w-4 mr-1" />
+                  Email
+                </p>
+                <p>{admin.email}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500 flex items-center">
+                  <PhoneIcon className="h-4 w-4 mr-1" />
+                  Phone
+                </p>
+                <p>{admin.phone || "Not provided"}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ACCOUNT */}
+          <div className="bg-white rounded-xl shadow border p-6">
+
+            <h3 className="font-semibold mb-4 flex items-center">
+              <ShieldCheckIcon className="h-5 w-5 mr-2" />
+              Account Information
+            </h3>
+
+            <div className="grid md:grid-cols-2 gap-4 text-sm">
+
+              <div>
+                <p className="text-gray-500">Created</p>
+                <p>{formatDate(admin.createdAt)}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Updated</p>
+                <p>{formatDate(admin.updatedAt)}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Status</p>
+                <p>{admin.isActive ? "Active" : "Inactive"}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Verified</p>
+                <p>{admin.isVerified ? "Yes" : "No"}</p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* DELETE DIALOG */}
       <ConfirmDialog
-        isOpen={deleteDialog.isOpen}
-        onClose={() => setDeleteDialog({ isOpen: false })}
-        onConfirm={handleDelete}
+        isOpen={deleteDialog}
+        onClose={() => setDeleteDialog(false)}
+        onConfirm={deleteAdmin}
         title="Delete Admin"
-        message={`Are you sure you want to delete ${admin.firstName} ${admin.lastName}? This action cannot be undone.`}
-        confirmText="Delete"
+        message={`Delete ${admin.firstName} ${admin.lastName}?`}
         type="danger"
       />
 
-      {/* Deactivate Confirmation Dialog */}
+      {/* DEACTIVATE DIALOG */}
       <ConfirmDialog
-        isOpen={deactivateDialog.isOpen}
-        onClose={() => setDeactivateDialog({ isOpen: false })}
-        onConfirm={handleDeactivate}
+        isOpen={deactivateDialog}
+        onClose={() => setDeactivateDialog(false)}
+        onConfirm={deactivateAdmin}
         title="Deactivate Admin"
-        message={`Are you sure you want to deactivate ${admin.firstName} ${admin.lastName}? They will no longer be able to access the system.`}
-        confirmText="Deactivate"
+        message={`Deactivate ${admin.firstName} ${admin.lastName}?`}
         type="warning"
       />
     </div>

@@ -1,14 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
 import './App.css';
-import App from './App';
 import ErrorBoundary from './common/ErrorBandary';
+import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { Toaster } from 'react-hot-toast';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <AuthProvider>
+        <ToastProvider>
+          <App />
+          <Toaster position="top-right" />
+        </ToastProvider>
+      </AuthProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

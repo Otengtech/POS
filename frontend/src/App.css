@@ -10,73 +10,169 @@
   }
 }
 
+/* Scrollbar Customization */
+@layer utilities {
+  /* Custom scrollbar styling for WebKit browsers (Chrome, Safari, Edge) */
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* Yellow theme scrollbar (matching your btn-primary) */
+  .scrollbar-yellow::-webkit-scrollbar-thumb {
+    background: #fbbf24; /* yellow-400 */
+  }
+
+  .scrollbar-yellow::-webkit-scrollbar-thumb:hover {
+    background: #f59e0b; /* yellow-500 */
+  }
+
+  /* Dark theme scrollbar (matching your btn-secondary) */
+  .scrollbar-dark::-webkit-scrollbar-thumb {
+    background: #1f2937; /* gray-800 */
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-thumb:hover {
+    background: #111827; /* gray-900 */
+  }
+
+  /* Thin scrollbar variant */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Firefox scrollbar styling */
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+  }
+
+  .scrollbar-yellow {
+    scrollbar-width: thin;
+    scrollbar-color: #fbbf24 #f1f1f1;
+  }
+
+  .scrollbar-dark {
+    scrollbar-width: thin;
+    scrollbar-color: #1f2937 #f1f1f1;
+  }
+
+  /* Rounded scrollbar container for better aesthetics */
+  .scrollbar-rounded {
+    border-radius: 12px;
+  }
+
+  /* Scrollbar with gradient (advanced) */
+  .scrollbar-gradient::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #fbbf24, #f59e0b);
+    border-radius: 10px;
+  }
+
+  .scrollbar-gradient::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #f59e0b, #d97706);
+  }
+}
+
+/* Optional: Apply custom scrollbar to specific elements */
 @layer components {
-  .btn-primary {
-    @apply bg-yellow-400 text-black font-semibold py-2 px-4 rounded-lg hover:bg-yellow-500 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50;
+  /* Scrollable card variant */
+  .card-scrollable {
+    @apply card overflow-y-auto max-h-96;
+    scrollbar-width: thin;
+    scrollbar-color: #fbbf24 #f1f1f1;
   }
-  
-  .btn-secondary {
-    @apply bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-black focus:ring-opacity-50;
+
+  .card-scrollable::-webkit-scrollbar {
+    width: 6px;
   }
-  
-  .card {
-    @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6;
+
+  .card-scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
   }
-  
-  .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300;
+
+  .card-scrollable::-webkit-scrollbar-thumb {
+    background: #fbbf24;
+    border-radius: 10px;
+  }
+
+  .card-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #f59e0b;
+  }
+
+  /* Custom scrollable dropdown */
+  .dropdown-scrollable {
+    @apply overflow-y-auto;
+    max-height: 200px;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+  }
+
+  .dropdown-scrollable::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .dropdown-scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .dropdown-scrollable::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
   }
 }
 
-/* common/Loader.css */
-.loader-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    width: 100%;
+/* Global scrollbar styling (optional - uncomment if you want site-wide styling) */
+/*
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #fbbf24 #f1f1f1;
 }
 
-.loader {
-    display: inline-block;
-    position: relative;
+html::-webkit-scrollbar {
+  width: 10px;
 }
 
-.loader-spinner {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
-    border-radius: 50%;
-    width: 100%;
-    height: 100%;
-    animation: spin 1s linear infinite;
+html::-webkit-scrollbar-track {
+  background: #f1f1f1;
 }
 
-.loader-small .loader-spinner {
-    width: 24px;
-    height: 24px;
-    border-width: 2px;
+html::-webkit-scrollbar-thumb {
+  background: #fbbf24;
+  border-radius: 10px;
 }
 
-.loader-medium .loader-spinner {
-    width: 40px;
-    height: 40px;
-    border-width: 3px;
+html::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
 }
-
-.loader-large .loader-spinner {
-    width: 60px;
-    height: 60px;
-    border-width: 4px;
-}
-
-.loader-text {
-    margin-top: 16px;
-    color: #666;
-    font-size: 14px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+*/

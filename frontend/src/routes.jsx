@@ -12,6 +12,7 @@ import Dashboard from './page/Dashboard/Dashboard';
 // Lazy load non-critical components with meaningful chunk names
 const Login = lazy(() => import(/* webpackChunkName: "auth" */ './auth/Login'));
 const SuperAdminSetup = lazy(() => import(/* webpackChunkName: "auth" */ './auth/SuperAdminSetup'));
+const Unauthorized = lazy(() => import(/* webpackChunkName: "auth" */ './page/Unauthorized'));
 
 // Admin components - lazy load
 const AdminList = lazy(() => import(/* webpackChunkName: "admin" */ './page/Admins/AdminList'));
@@ -54,18 +55,42 @@ const Profile = lazy(() => import(/* webpackChunkName: "settings" */ './page/Set
 // Simple fallback loader for lazy components
 const LazyLoader = () => <Loader size="small" text="Loading..." />;
 
+// Enhanced PrivateRoute component with better role checking
 const PrivateRoute = ({ children, allowedRoles = [] }) => {
-    const { isAuthenticated, hasRole, loading } = useAuth();
+    const { isAuthenticated, hasRole, loading, user } = useAuth();
 
+    // Show loader while checking authentication
     if (loading) {
         return <Loader text="Authenticating..." />;
     }
 
+    // Redirect to login if not authenticated
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
     }
 
-    if (allowedRoles.length > 0 && !allowedRoles.some(role => hasRole(role))) {
+    // Check role-based access
+    if (allowedRoles.length > 0) {
+        const hasAllowedRole = allowedRoles.some(role => hasRole(role));
+        if (!hasAllowedRole) {
+            // Log access denial for debugging
+            console.warn(`Access denied for user ${user?.email} with role ${user?.role} to route requiring ${allowedRoles.join(' or ')}`);
+            return <Navigate to="/unauthorized" replace />;
+        }
+    }
+
+    return children;
+};
+
+// Public route - redirects to dashboard if already authenticated
+const PublicRoute = ({ children }) => {
+    const { isAuthenticated, loading } = useAuth();
+
+    if (loading) {
+        return <Loader text="Loading..." />;
+    }
+
+    if (isAuthenticated) {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -77,11 +102,31 @@ const AppRoutes = () => {
     return (
         <Suspense fallback={<Loader text="Loading application..." />}>
             <Routes>
-                {/* Public routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/setup-super-admin" element={<SuperAdminSetup />} />
+                {/* Public routes - accessible only when not logged in */}
+                <Route path="/login" element={
+                    <PublicRoute>
+                        <Suspense fallback={<LazyLoader />}>
+                            <Login />
+                        </Suspense>
+                    </PublicRoute>
+                } />
+                
+                <Route path="/setup-super-admin" element={
+                    <PublicRoute>
+                        <Suspense fallback={<LazyLoader />}>
+                            <SuperAdminSetup />
+                        </Suspense>
+                    </PublicRoute>
+                } />
 
-                {/* Protected routes */}
+                {/* Unauthorized page - accessible to everyone */}
+                <Route path="/unauthorized" element={
+                    <Suspense fallback={<LazyLoader />}>
+                        <Unauthorized />
+                    </Suspense>
+                } />
+
+                {/* Protected routes - require authentication */}
                 <Route path="/" element={
                     <PrivateRoute>
                         <Layout />
@@ -89,7 +134,7 @@ const AppRoutes = () => {
                 }>
                     <Route index element={<Navigate to="/dashboard" replace />} />
                     
-                    {/* Dashboard - Critical, load normally */}
+                    {/* Dashboard - Accessible by all authenticated users */}
                     <Route path="dashboard" element={<Dashboard />} />
 
                     {/* Admin Routes - Super Admin only */}
@@ -124,7 +169,7 @@ const AppRoutes = () => {
                         } />
                     </Route>
 
-                    {/* Inventory Routes */}
+                    {/* Inventory Routes - Super Admin and Admin */}
                     <Route path="inventory">
                         <Route index element={
                             <PrivateRoute allowedRoles={['super_admin', 'admin']}>
@@ -150,7 +195,7 @@ const AppRoutes = () => {
                         </PrivateRoute>
                     } />
 
-                    {/* Business Routes */}
+                    {/* Business Routes - Super Admin and Admin */}
                     <Route path="businesses">
                         <Route index element={
                             <PrivateRoute allowedRoles={['super_admin', 'admin']}>
@@ -182,7 +227,7 @@ const AppRoutes = () => {
                         } />
                     </Route>
 
-                    {/* Branch Routes */}
+                    {/* Branch Routes - Super Admin and Admin */}
                     <Route path="branches">
                         <Route index element={
                             <PrivateRoute allowedRoles={['super_admin', 'admin']}>
@@ -214,7 +259,7 @@ const AppRoutes = () => {
                         } />
                     </Route>
 
-                    {/* Product Routes */}
+                    {/* Product Routes - Super Admin and Admin */}
                     <Route path="products">
                         <Route index element={
                             <PrivateRoute allowedRoles={['super_admin', 'admin']}>
@@ -246,7 +291,7 @@ const AppRoutes = () => {
                         } />
                     </Route>
 
-                    {/* Sales Routes */}
+                    {/* Sales Routes - Super Admin and Admin */}
                     <Route path="sales">
                         <Route index element={
                             <PrivateRoute allowedRoles={['super_admin', 'admin']}>
@@ -271,7 +316,7 @@ const AppRoutes = () => {
                         } />
                     </Route>
 
-                    {/* Reports Routes */}
+                    {/* Reports Routes - Super Admin and Admin */}
                     <Route path="reports" element={
                         <PrivateRoute allowedRoles={['super_admin', 'admin']}>
                             <Suspense fallback={<LazyLoader />}>
@@ -280,7 +325,7 @@ const AppRoutes = () => {
                         </PrivateRoute>
                     } />
 
-                    {/* Settings Routes */}
+                    {/* Settings Routes - Super Admin and Admin */}
                     <Route path="settings" element={
                         <PrivateRoute allowedRoles={['super_admin', 'admin']}>
                             <Suspense fallback={<LazyLoader />}>
@@ -289,6 +334,9 @@ const AppRoutes = () => {
                         </PrivateRoute>
                     } />
                 </Route>
+
+                {/* Catch all unmatched routes - redirect to dashboard if authenticated, otherwise to login */}
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </Suspense>
     );

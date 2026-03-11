@@ -1,24 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { 
-  FaUser, 
-  FaEnvelope, 
-  FaLock, 
-  FaSpinner, 
-  FaEye, 
-  FaEyeSlash,
-  FaUserShield 
-} from 'react-icons/fa';
-import Toast from '../common/Toast';
+import { adminApi } from '../services/adminApi';
+import { useToast } from '../contexts/ToastContext';
 
-const CreateSuperAdmin = () => {
-  const navigate = useNavigate();
-  const { createSuperAdmin } = useAuth();
-  
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+const SuperAdminSetup = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -26,269 +11,141 @@ const CreateSuperAdmin = () => {
     password: '',
     confirmPassword: ''
   });
-  
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [toast, setToast] = useState({ show: false, message: '', type: '' });
+  
+  const toast = useToast();
+  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
+    
+    if (!formData.firstName) newErrors.firstName = 'First name required';
+    if (!formData.lastName) newErrors.lastName = 'Last name required';
+    
+    if (!formData.email) newErrors.email = 'Email required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email';
+    
+    if (!formData.password) newErrors.password = 'Password required';
+    else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+    
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-
-    return newErrors;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    // Remove confirmPassword before sending to API
-    const { confirmPassword, ...apiData } = formData;
+    
+    if (!validateForm()) return;
     
     setLoading(true);
-    const result = await createSuperAdmin(apiData);
-
-    if (result.success) {
-      setToast({
-        show: true,
-        message: 'Super Admin created successfully! Redirecting to login...',
-        type: 'success'
-      });
-
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
-    } else {
-      setToast({
-        show: true,
-        message: result.error,
-        type: 'error'
-      });
+    
+    try {
+      const result = await adminApi.createSuperAdmin(formData);
+      toast.success('Super Admin created successfully!');
+      navigate('/login');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Setup failed');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setLoading(false);
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white p-3 sm:p-4">
-      <div className="w-full max-w-sm sm:max-w-md mx-auto">
-        {/* Header */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-black text-white rounded-full mb-3">
-            <FaUserShield className="text-xl sm:text-2xl" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-light tracking-wide text-black">
-            CREATE SUPER ADMIN
-          </h1>
-          <p className="text-sm text-gray-500 mt-2">
-            First-time setup - Create system administrator
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-light text-white">Setup Super Admin</h1>
+          <p className="text-gray-400 mt-2">Create the first administrator account</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* First Name */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              First Name
-            </label>
-            <div className="relative">
-              <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                className={`w-full pl-9 pr-3 py-3 text-sm border ${
-                  errors.firstName ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white`}
-                placeholder="Enter first name"
-              />
+        <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-gray-700">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                {errors.firstName && <p className="text-sm text-red-400 mt-1">{errors.firstName}</p>}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                {errors.lastName && <p className="text-sm text-red-400 mt-1">{errors.lastName}</p>}
+              </div>
             </div>
-            {errors.firstName && (
-              <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>
-            )}
-          </div>
 
-          {/* Last Name */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Last Name
-            </label>
-            <div className="relative">
-              <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                className={`w-full pl-9 pr-3 py-3 text-sm border ${
-                  errors.lastName ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white`}
-                placeholder="Enter last name"
-              />
-            </div>
-            {errors.lastName && (
-              <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Email
-            </label>
-            <div className="relative">
-              <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full pl-9 pr-3 py-3 text-sm border ${
-                  errors.email ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white`}
-                placeholder="your@email.com"
+                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+              {errors.email && <p className="text-sm text-red-400 mt-1">{errors.email}</p>}
             </div>
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-500">{errors.email}</p>
-            )}
-          </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
               <input
-                type={showPassword ? "text" : "password"}
+                type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full pl-9 pr-10 py-3 text-sm border ${
-                  errors.password ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white`}
-                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
-              >
-                {showPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
-              </button>
+              {errors.password && <p className="text-sm text-red-400 mt-1">{errors.password}</p>}
             </div>
-            {errors.password && (
-              <p className="mt-1 text-xs text-red-500">{errors.password}</p>
-            )}
-          </div>
 
-          {/* Confirm Password */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
               <input
-                type={showConfirmPassword ? "text" : "password"}
+                type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`w-full pl-9 pr-10 py-3 text-sm border ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg focus:border-black focus:ring-1 focus:ring-black outline-none transition-all bg-white`}
-                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
-              >
-                {showConfirmPassword ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
-              </button>
+              {errors.confirmPassword && <p className="text-sm text-red-400 mt-1">{errors.confirmPassword}</p>}
             </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>
-            )}
-          </div>
 
-          {/* Example Data Helper */}
-          <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-            <p className="text-xs text-gray-500 mb-1">Example data:</p>
-            <code className="text-xs text-gray-600 block">
-              {`{ firstName: "Super", lastName: "Admin", email: "super@admin.com", password: "Password123" }`}
-            </code>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mt-6"
-          >
-            {loading ? (
-              <>
-                <FaSpinner className="animate-spin mr-2 text-sm" />
-                Creating...
-              </>
-            ) : (
-              'Create Super Admin'
-            )}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-50 mt-6"
+            >
+              {loading ? 'Creating...' : 'Create Super Admin'}
+            </button>
+          </form>
+        </div>
       </div>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ show: false, message: '', type: '' })}
-        />
-      )}
     </div>
   );
 };
 
-export default CreateSuperAdmin;
+export default SuperAdminSetup;
