@@ -62,19 +62,19 @@ const Header = ({ setSidebarOpen }) => {
 
   // Format time
   const formatTime = () => {
-    return currentTime.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit', 
+    return currentTime.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
       second: '2-digit',
-      hour12: true 
+      hour12: true
     });
   };
 
   // Format date
   const formatDate = () => {
-    return currentTime.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
+    return currentTime.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
@@ -96,12 +96,10 @@ const Header = ({ setSidebarOpen }) => {
       <div className="sticky top-0 z-20 flex-shrink-0 flex h-20 bg-black border-b border-[#AFC1B3]/20">
         {/* Mobile menu button */}
         <button
-          type="button"
-          className="lg:hidden px-6 text-gray-400 hover:text-[#AFC1B3] focus:outline-none transition-colors duration-200"
-          onClick={() => setSidebarOpen(true)}
+          onClick={() => setSidebarOpen(prev => !prev)}
+          className="p-2 text-gray-600 md:hidden"
         >
-          <span className="sr-only">Open sidebar</span>
-          <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+          <Bars3Icon className="h-8 w-8 text-white" />
         </button>
 
         <div className="flex-1 flex items-center justify-between px-6 lg:px-8">
@@ -150,25 +148,25 @@ const Header = ({ setSidebarOpen }) => {
                       )}
                       <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-black"></span>
                     </div>
-                    
+
                     {/* User info */}
                     <div className="hidden lg:block text-left">
                       <p className="text-sm font-medium text-white">
                         {user?.firstName ? `${user.firstName} ${user.lastName}` : user?.fullName || 'Administrator'}
                       </p>
                       <p className="text-xs text-gray-400">
-                        {user?.role?.split('_').map(word => 
+                        {user?.role?.split('_').map(word =>
                           word.charAt(0).toUpperCase() + word.slice(1)
                         ).join(' ') || 'Administrator'}
                       </p>
                     </div>
                   </div>
-                  
+
                   {/* Chevron indicator */}
-                  <svg 
-                    className="hidden lg:block h-5 w-5 text-gray-500 group-hover:text-[#AFC1B3] transition-colors duration-200" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className="hidden lg:block h-5 w-5 text-gray-500 group-hover:text-[#AFC1B3] transition-colors duration-200"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />

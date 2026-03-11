@@ -183,8 +183,8 @@ const AdminList = () => {
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-medium text-[#8FA5A0] mb-2">Unable to load admins</h3>
-              <p className="text-[#8FA5A0] text-sm mb-4">{error}</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Unable to load admins</h3>
+              <p className="text-gray-900 text-sm mb-4">{error}</p>
               <button
                 onClick={fetchAdmins}
                 className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#8FA5A0] to-[#AFC1B3] text-white text-sm font-medium rounded-xl hover:shadow-lg transition-all duration-200 hover:scale-105"
@@ -206,10 +206,10 @@ const AdminList = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-light text-gray-900 mb-2 flex items-center">
-              <ShieldCheckIcon className="h-8 w-8 text-[#AFC1B3] mr-3" />
+              <ShieldCheckIcon className="h-8 w-8 text-gray-900 mr-3" />
               Administrators
             </h1>
-            <p className="text-sm text-[#8FA5A0] flex items-center">
+            <p className="text-sm text-gray-900 flex items-center">
               <span className="w-1.5 h-1.5 bg-[#AFC1B3] rounded-full mr-2"></span>
               Manage system administrators and their permissions • Last updated: {lastUpdated.toLocaleTimeString()}
             </p>
@@ -240,21 +240,21 @@ const AdminList = () => {
         {/* Search */}
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-[#8FA5A0] z-10" />
+            <MagnifyingGlassIcon className="h-5 w-5 text-gray-900 z-10" />
           </div>
           <input
             type="text"
             placeholder="Search by name, email, or role..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 border border-[#AFC1B3]/30 rounded-full focus:outline-none focus:ring-2 focus:ring-[#AFC1B3] focus:border-transparent transition-all duration-200 bg-white/80 backdrop-blur-sm"
+            className="block w-full pl-10 placeholder:text-gray-900 pr-3 py-3 border border-[#AFC1B3]/30 rounded-full focus:outline-none focus:ring-2 focus:ring-[#AFC1B3] focus:border-transparent transition-all duration-200 bg-white/80"
           />
         </div>
 
         {/* Status Filter */}
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FunnelIcon className="h-5 w-5 text-[#8FA5A0] z-10" />
+            <FunnelIcon className="h-5 w-5 text-gray-900 z-10" />
           </div>
           <select
             value={statusFilter}
@@ -269,7 +269,7 @@ const AdminList = () => {
 
         {/* Results count */}
         <div className="flex items-center justify-end">
-          <span className=" px-4 py-3 rounded-xl text-sm text-[#8FA5A0]">
+          <span className=" px-4 py-3 rounded-xl text-sm text-gray-900">
             Showing <span className="font-semibold text-gray-900">{filteredAdmins.length}</span> of <span className="font-semibold text-gray-900">{admins.length}</span> admins
           </span>
         </div>
@@ -280,7 +280,7 @@ const AdminList = () => {
         <div className="text-center py-16 bg-white/60 backdrop-blur-sm rounded-2xl border border-[#AFC1B3]/20">
           <UserCircleIcon className="h-20 w-20 text-[#AFC1B3] mx-auto mb-4" />
           <h3 className="text-xl font-light text-gray-900 mb-2">No admins found</h3>
-          <p className="text-[#8FA5A0] mb-8">
+          <p className="text-gray-900 mb-8">
             {searchTerm || statusFilter !== 'all' 
               ? 'Try adjusting your search filters' 
               : 'Get started by adding your first administrator'}
@@ -339,7 +339,7 @@ const AdminList = () => {
               <h3 className="text-lg font-semibold text-black">
                 {admin.firstName} {admin.lastName}
               </h3>
-              <p className="text-sm text-[#8FA5A0] flex items-center mt-1">
+              <p className="text-sm text-gray-900 flex items-center mt-1">
                 <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
@@ -366,17 +366,17 @@ const AdminList = () => {
         </div>
 
         {/* Additional Info */}
-        <div className="space-y-2 text-sm text-gray-600 mb-4">
+        <div className="space-y-2 text-sm text-gray-900 mb-4">
           {admin.lastLoginAt && (
             <div className="flex items-center">
-              <svg className="h-4 w-4 mr-2 text-[#8FA5A0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 mr-2 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>Last login: {formatDate(admin.lastLoginAt)}</span>
             </div>
           )}
           <div className="flex items-center">
-            <svg className="h-4 w-4 mr-2 text-[#8FA5A0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4 mr-2 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <span>Joined: {formatDate(admin.createdAt)}</span>
@@ -388,7 +388,7 @@ const AdminList = () => {
           <div className="flex space-x-1">
             <Link
               to={`/admins/${admin._id}`}
-              className="p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-lg transition-all duration-200"
+              className="p-2 text-gray-900 hover:text-black hover:bg-gray-100 rounded-lg transition-all duration-200"
               title="View Details"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

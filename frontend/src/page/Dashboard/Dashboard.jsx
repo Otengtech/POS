@@ -300,7 +300,7 @@ const Dashboard = () => {
             <h1 className="text-3xl font-light text-gray-900 mb-2">
               {getGreeting()}, {user?.firstName || 'User'} {user?.lastName || ''}
             </h1>
-            <p className="text-sm text-[#8FA5A0] flex items-center">
+            <p className="text-sm text-gray-900 flex items-center">
               <span className="w-1.5 h-1.5 bg-[#AFC1B3] rounded-full mr-2"></span>
               Last updated: {lastUpdated.toLocaleTimeString()}
             </p>
@@ -334,7 +334,7 @@ const Dashboard = () => {
                   <p className="text-3xl font-light text-gray-900 mb-2">
                     {stat.format(stat.value)}
                   </p>
-                  <p className="text-xs text-gray-600">{stat.description}</p>
+                  <p className="text-xs text-gray-900">{stat.description}</p>
                 </div>
 
                 <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -342,7 +342,7 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center text-xs text-gray-600">
+              <div className="mt-4 flex items-center text-xs text-gray-900">
                 <span className="flex items-center">
                   <span className="w-1.5 h-1.5 bg-gray-300 rounded-full mr-1"></span>
                   Real-time data
